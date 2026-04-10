@@ -1,0 +1,47 @@
+name: Pipe
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5.0.0
+        with:
+          dotnet-version: 10.0
+
+      - name: Restore
+        run: dotnet restore Tn-Events.slnx
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test
+
+  send-to-discord:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'opened' }}
+    steps:
+      - name: Create Message
+        id: createMessage
+        run: |
+          MESSAGE=" @everyone ${{ github.actor }} har skapat en Pull Request (#${{ github.event.pull_request.number }})"
+          MESSAGE="$MESSAGE - \"${{ github.event.pull_request.title }}\""
+          MESSAGE="$MESSAGE\nRepository: ${{ github.repository }}"
+          MESSAGE="$MESSAGE\nLänk: ${{ github.event.pull_request.html_url }}"
+          echo "discord_message<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$MESSAGE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: ${{ steps.createMessage.outputs.discord_message }}
