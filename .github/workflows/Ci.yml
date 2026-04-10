@@ -16,7 +16,7 @@ jobs:
           dotnet-version: 10.0
 
       - name: Restore
-        run: dotnet restore Tn-Events.slnx
+        run: dotnet restore
 
       - name: Build
         run: dotnet build --no-restore
