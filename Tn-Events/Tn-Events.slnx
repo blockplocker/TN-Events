@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DAL/DAL.csproj" />
+  <Project Path="Services/Services.csproj" />
+  <Project Path="Test/Test.csproj" />
+  <Project Path="Tn-Events/Tn-Events.csproj" />
+</Solution>
