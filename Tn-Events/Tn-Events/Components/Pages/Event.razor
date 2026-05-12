@@ -1,0 +1,46 @@
+﻿@page "/events"
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IEventService EventService
+@rendermode InteractiveServer
+
+<PageTitle>Event</PageTitle>
+
+<h3>Alla event</h3>
+
+@if (events == null)
+{
+    <p>Laddar...</p>
+}
+else if (!events.Any())
+{
+    <p>Inga event tillgängliga just nu.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var ev in events)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@ev.Title</h5>
+                        <p class="card-text">@ev.CategoryName</p>
+                        <p class="card-text"><small>@ev.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
+                        <p class="card-text">Platser kvar: @ev.AvailableSpots / @ev.Capacity</p>
+                        <a href="/events/@ev.Id" class="btn btn-primary">Visa</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<EventResponseDto>? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetAllEventsAsync();
+    }
+}

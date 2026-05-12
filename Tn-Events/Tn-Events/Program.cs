@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using Tn_Events.Components;
 using Tn_Events.Components.Account;
 using DAL.Data;
+using DAL.Repositories;
+using DAL.Repositories.Interfaces;
+using Services.Services;
+using Services.Services.Interfaces;
 
 namespace Tn_Events
 {
@@ -43,6 +47,12 @@ namespace Tn_Events
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+            // Repositories
+            builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+            // Services
+            builder.Services.AddScoped<IEventService, EventService>();
 
             var app = builder.Build();
 
