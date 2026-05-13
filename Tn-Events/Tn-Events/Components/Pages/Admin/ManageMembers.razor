@@ -1,6 +1,10 @@
 @page "/admin/manage-members"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using DAL.Data
+@inject UserManager<ApplicationUser> UserManager
 @attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
 
 <PageTitle>Hantera medlemmar</PageTitle>
 
@@ -8,7 +12,106 @@
 
 <a href="/admin" class="btn btn-secondary mb-3">← Tillbaka till admin</a>
 
-<p></p>
+@if (members == null)
+{
+    <p>Laddar...</p>
+}
+else if (!members.Any())
+{
+    <div class="alert alert-info">Inga medlemmar registrerade.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Namn</th>
+                    <th>Email</th>
+                    <th>Roll</th>
+                    <th>Bokningar</th>
+                    <th>Hantera</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var member in members)
+                {
+                    <tr>
+                        <td>@member.FirstName @member.LastName</td>
+                        <td>@member.Email</td>
+                        <td>
+                            @if (member.IsAdmin)
+                            {
+                                <span class="badge bg-primary">Admin</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Användare</span>
+                            }
+                        </td>
+                        <td>@member.BookingCount</td>
+                        <td>
+                            @if (!member.IsAdmin)
+                            {
+                                <button class="btn btn-sm btn-outline-primary" @onclick="() => ToggleAdmin(member.UserId, true)">
+                                    Gör admin
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-outline-warning" @onclick="() => ToggleAdmin(member.UserId, false)">
+                                    Ta bort admin
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
 
 @code {
+    private List<MemberView>? members;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var users = UserManager.Users.ToList();
+        members = [];
+
+        foreach (var user in users)
+        {
+            members.Add(new MemberView
+            {
+                UserId = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email ?? "",
+                IsAdmin = await UserManager.IsInRoleAsync(user, "Admin"),
+                BookingCount = user.Bookings?.Count ?? 0
+            });
+        }
+    }
+
+    private async Task ToggleAdmin(string userId, bool makeAdmin)
+    {
+        var user = await UserManager.FindByIdAsync(userId);
+        if (user == null) return;
+
+        if (makeAdmin)
+            await UserManager.AddToRoleAsync(user, "Admin");
+        else
+            await UserManager.RemoveFromRoleAsync(user, "Admin");
+        await OnInitializedAsync();
+    }
+
+    private sealed class MemberView
+    {
+        public string UserId { get; set; } = "";
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public bool IsAdmin { get; set; }
+        public int BookingCount { get; set; }
+    }
 }
