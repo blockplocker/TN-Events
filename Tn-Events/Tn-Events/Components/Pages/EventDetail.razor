@@ -1,0 +1,40 @@
+﻿@page "/events/{Id:int}"
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IEventService EventService
+@rendermode InteractiveServer
+
+@if (ev == null)
+{
+    <p>Laddar...</p>
+}
+else
+{
+    <PageTitle>@ev.Title</PageTitle>
+
+    <h3>@ev.Title</h3>
+    <p><strong>Kategori:</strong> @ev.CategoryName</p>
+    <p><strong>Beskrivning:</strong> @ev.Description</p>
+    <p><strong>Plats:</strong> @ev.Address</p>
+    <p><strong>Datum:</strong> @ev.StartDate.ToString("yyyy-MM-dd HH:mm") – @ev.EndDate.ToString("yyyy-MM-dd HH:mm")</p>
+    <p><strong>Platser kvar:</strong> @ev.AvailableSpots / @ev.Capacity</p>
+
+    @if (ev.IsFull)
+    {
+        <div class="alert alert-warning">Eventet är fullbokat!</div>
+    }
+
+    <a href="/events" class="btn btn-secondary">← Tillbaka till alla event</a>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private EventResponseDto? ev;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ev = await EventService.GetEventByIdAsync(Id);
+    }
+}
