@@ -1,8 +1,10 @@
 @page "/admin/manage-members"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using DAL.Data
 @inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
 @attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
@@ -76,7 +78,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var users = UserManager.Users.ToList();
+        var users = await DbContext.Users
+            .Include(u => u.Bookings)
+            .ToListAsync();
+
         members = [];
 
         foreach (var user in users)
@@ -88,7 +93,7 @@ else
                 LastName = user.LastName,
                 Email = user.Email ?? "",
                 IsAdmin = await UserManager.IsInRoleAsync(user, "Admin"),
-                BookingCount = user.Bookings?.Count ?? 0
+                BookingCount = user.Bookings.Count
             });
         }
     }

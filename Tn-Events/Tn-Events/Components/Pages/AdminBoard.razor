@@ -1,0 +1,40 @@
+﻿@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin</PageTitle>
+
+<h3>Adminpanel</h3>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Skapa event</h5>
+                <p class="card-text">Skapa ett nytt event med kategori, datum och kapacitet.</p>
+                <a href="/admin/create-event" class="btn btn-primary">Skapa event</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Hantera event</h5>
+                <p class="card-text">Redigera, avbryt eller ta bort befintliga event.</p>
+                <a href="/admin/manage-events" class="btn btn-primary">Hantera event</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Hantera medlemmar</h5>
+                <p class="card-text">Visa och hantera registrerade användare.</p>
+                <a href="/admin/manage-members" class="btn btn-primary">Hantera medlemmar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+}

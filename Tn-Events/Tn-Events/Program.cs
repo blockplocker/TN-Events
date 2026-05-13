@@ -39,7 +39,7 @@ namespace Tn_Events
 
             builder.Services.AddIdentityCore<ApplicationUser>(options =>
                 {
-                    options.SignIn.RequireConfirmedAccount = true;
+                    options.SignIn.RequireConfirmedAccount = false;
                     options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
                 })
                 .AddRoles<IdentityRole>()
@@ -51,6 +51,7 @@ namespace Tn_Events
 
             // Repositories
             builder.Services.AddScoped<IEventRepository, EventRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             // Services
             builder.Services.AddScoped<IEventService, EventService>();

@@ -77,11 +77,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        events = await EventService.GetAllEventsAsync();
+        events = await EventService.GetAllEventsAdminAsync();
     }
 
     private async Task CancelEvent(int eventId)
     {
-        await Task.CompletedTask;
+        await EventService.ToggleCancelEventAsync(eventId);
+        events = await EventService.GetAllEventsAdminAsync();
     }
 }

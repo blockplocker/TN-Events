@@ -5,6 +5,9 @@ namespace DAL.Repositories.Interfaces
     public interface IEventRepository
     {
         Task<List<Event>> GetAllAsync();
+        Task<List<Event>> GetAllAdminAsync();
         Task<Event?> GetByIdAsync(int id);
+        Task<Event> CreateAsync(Event ev);
+        Task ToggleCancelAsync(int id);
     }
 }

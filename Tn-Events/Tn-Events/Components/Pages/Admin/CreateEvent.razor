@@ -1,6 +1,10 @@
 @page "/admin/create-event"
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@using Services.Dto.Request
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IEventService EventService
 @attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
@@ -42,9 +46,9 @@
             <div class="form-floating mb-3">
                 <InputSelect @bind-Value="Input.CategoryId" id="category" class="form-select">
                     <option value="0">-- Välj kategori --</option>
-                    @foreach (var cat in categories)
+                    @foreach (var c in categories)
                     {
-                        <option value="@cat.Id">@cat.Name</option>
+                        <option value="@c.Id">@c.Name</option>
                     }
                 </InputSelect>
                 <label for="category">Kategori</label>
@@ -82,18 +86,30 @@
 
     private string? successMessage;
 
-    private List<CategoryOption> categories = [];
+    private List<CategoryDto> categories = [];
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         Input ??= new();
+        categories = await EventService.GetAllCategoriesAsync();
     }
 
     private async Task HandleSubmit()
     {
+        var dto = new CreateEventRequestDto
+        {
+            Title = Input.Title,
+            Description = Input.Description,
+            Address = Input.Address,
+            StartDate = Input.StartDate!.Value,
+            EndDate = Input.EndDate!.Value,
+            Capacity = Input.Capacity,
+            CategoryId = Input.CategoryId
+        };
+
+        await EventService.CreateEventAsync(dto);
         successMessage = $"Event '{Input.Title}' skapades!";
         Input = new();
-        await Task.CompletedTask;
     }
 
     private sealed class CreateEventInput
@@ -118,11 +134,5 @@
 
         [Range(1, int.MaxValue, ErrorMessage = "Välj en kategori")]
         public int CategoryId { get; set; }
-    }
-
-    private sealed class CategoryOption
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
     }
 }
