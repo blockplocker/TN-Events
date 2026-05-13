@@ -1,0 +1,14 @@
+@page "/admin/manage-members"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Hantera medlemmar</PageTitle>
+
+<h3>Hantera medlemmar</h3>
+
+<a href="/admin" class="btn btn-secondary mb-3">← Tillbaka till admin</a>
+
+<p></p>
+
+@code {
+}

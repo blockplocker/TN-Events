@@ -3,6 +3,9 @@
 @using Services.Services.Interfaces
 @inject IEventService EventService
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
 
 <PageTitle>Event</PageTitle>
 

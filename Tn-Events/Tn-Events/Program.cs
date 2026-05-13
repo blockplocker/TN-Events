@@ -13,7 +13,7 @@ namespace Tn_Events
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +42,7 @@ namespace Tn_Events
                     options.SignIn.RequireConfirmedAccount = true;
                     options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
                 })
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
@@ -55,6 +56,21 @@ namespace Tn_Events
             builder.Services.AddScoped<IEventService, EventService>();
 
             var app = builder.Build();
+
+            // Seed roles
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                string[] roles = ["Admin", "User"];
+
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        await roleManager.CreateAsync(new IdentityRole(role));
+                    }
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
