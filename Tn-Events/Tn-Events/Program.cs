@@ -55,6 +55,7 @@ namespace Tn_Events
 
             // Services
             builder.Services.AddScoped<IEventService, EventService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
 
             var app = builder.Build();
 

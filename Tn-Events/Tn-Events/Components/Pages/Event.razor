@@ -25,12 +25,21 @@ else
         @foreach (var ev in events)
         {
             <div class="col-md-4 mb-3">
-                <div class="card">
+                <div class="card @(ev.IsCancelled ? "border-danger opacity-75" : "")">
                     <div class="card-body">
-                        <h5 class="card-title">@ev.Title</h5>
+                        <h5 class="card-title">
+                            @ev.Title
+                            @if (ev.IsCancelled)
+                            {
+                                <span class="badge bg-danger ms-2">Inställt</span>
+                            }
+                        </h5>
                         <p class="card-text">@ev.CategoryName</p>
                         <p class="card-text"><small>@ev.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
-                        <p class="card-text">Platser kvar: @ev.AvailableSpots / @ev.Capacity</p>
+                        @if (!ev.IsCancelled)
+                        {
+                            <p class="card-text">Platser kvar: @ev.AvailableSpots / @ev.Capacity</p>
+                        }
                         <a href="/events/@ev.Id" class="btn btn-primary">Visa</a>
                     </div>
                 </div>

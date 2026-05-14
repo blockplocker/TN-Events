@@ -19,7 +19,7 @@ namespace DAL.Repositories
             return await _context.Events
                 .Include(e => e.Category)
                 .Include(e => e.Bookings)
-                .Where(e => !e.IsCancelled && e.EndDate > DateTime.UtcNow)
+                .Where(e => e.EndDate > DateTime.UtcNow)
                 .OrderBy(e => e.StartDate)
                 .ToListAsync();
         }

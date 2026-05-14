@@ -21,7 +21,7 @@ namespace DAL.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Category> CreateCategoryAsync(Category category)
+        public async Task<Category> CreateAsync(Category category)
         {
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
