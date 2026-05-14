@@ -1,0 +1,138 @@
+@page "/admin/create-event"
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@using Services.Dto.Request
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IEventService EventService
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Skapa event</PageTitle>
+
+<h3>Skapa event</h3>
+
+<a href="/admin" class="btn btn-secondary mb-3">← Tillbaka till admin</a>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+<EditForm Model="Input" OnValidSubmit="HandleSubmit" FormName="create-event">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-danger" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Title" id="title" class="form-control" placeholder="Titel" />
+                <label for="title">Titel</label>
+                <ValidationMessage For="() => Input.Title" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="Input.Description" id="description" class="form-control" placeholder="Beskrivning" style="height: 120px" />
+                <label for="description">Beskrivning</label>
+                <ValidationMessage For="() => Input.Description" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Address" id="address" class="form-control" placeholder="Adress" />
+                <label for="address">Adress</label>
+                <ValidationMessage For="() => Input.Address" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="Input.CategoryId" id="category" class="form-select">
+                    <option value="0">-- Välj kategori --</option>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </InputSelect>
+                <label for="category">Kategori</label>
+                <ValidationMessage For="() => Input.CategoryId" class="text-danger" />
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.StartDate" id="startdate" class="form-control" />
+                <label for="startdate">Startdatum</label>
+                <ValidationMessage For="() => Input.StartDate" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputDate @bind-Value="Input.EndDate" id="enddate" class="form-control" />
+                <label for="enddate">Slutdatum</label>
+                <ValidationMessage For="() => Input.EndDate" class="text-danger" />
+            </div>
+
+            <div class="form-floating mb-3">
+                <InputNumber @bind-Value="Input.Capacity" id="capacity" class="form-control" placeholder="Kapacitet" />
+                <label for="capacity">Max antal deltagare</label>
+                <ValidationMessage For="() => Input.Capacity" class="text-danger" />
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Skapa event</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm]
+    private CreateEventInput Input { get; set; } = new();
+
+    private string? successMessage;
+
+    private List<CategoryDto> categories = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        categories = await EventService.GetAllCategoriesAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        var dto = new CreateEventRequestDto
+        {
+            Title = Input.Title,
+            Description = Input.Description,
+            Address = Input.Address,
+            StartDate = Input.StartDate!.Value,
+            EndDate = Input.EndDate!.Value,
+            Capacity = Input.Capacity,
+            CategoryId = Input.CategoryId
+        };
+
+        await EventService.CreateEventAsync(dto);
+        successMessage = $"Event '{Input.Title}' skapades!";
+        Input = new();
+    }
+
+    private sealed class CreateEventInput
+    {
+        [Required(ErrorMessage = "Titel krävs")]
+        public string Title { get; set; } = "";
+
+        [Required(ErrorMessage = "Beskrivning krävs")]
+        public string Description { get; set; } = "";
+
+        [Required(ErrorMessage = "Adress krävs")]
+        public string Address { get; set; } = "";
+
+        [Required(ErrorMessage = "Startdatum krävs")]
+        public DateTime? StartDate { get; set; }
+
+        [Required(ErrorMessage = "Slutdatum krävs")]
+        public DateTime? EndDate { get; set; }
+
+        [Range(1, 10000, ErrorMessage = "Kapacitet måste vara minst 1")]
+        public int Capacity { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Välj en kategori")]
+        public int CategoryId { get; set; }
+    }
+}

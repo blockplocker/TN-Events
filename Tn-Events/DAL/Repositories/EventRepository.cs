@@ -19,7 +19,16 @@ namespace DAL.Repositories
             return await _context.Events
                 .Include(e => e.Category)
                 .Include(e => e.Bookings)
-.Where(e => !e.IsCancelled && e.EndDate > DateTime.UtcNow)
+                .Where(e => e.EndDate > DateTime.UtcNow)
+                .OrderBy(e => e.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Event>> GetAllAdminAsync()
+        {
+            return await _context.Events
+                .Include(e => e.Category)
+                .Include(e => e.Bookings)
                 .OrderBy(e => e.StartDate)
                 .ToListAsync();
         }
@@ -30,6 +39,22 @@ namespace DAL.Repositories
                 .Include(e => e.Category)
                 .Include(e => e.Bookings)
                 .FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<Event> CreateAsync(Event ev)
+        {
+            _context.Events.Add(ev);
+            await _context.SaveChangesAsync();
+            return ev;
+        }
+
+        public async Task ToggleCancelAsync(int id)
+        {
+            var ev = await _context.Events.FindAsync(id);
+            if (ev == null) return;
+
+            ev.IsCancelled = !ev.IsCancelled;
+            await _context.SaveChangesAsync();
         }
     }
 }

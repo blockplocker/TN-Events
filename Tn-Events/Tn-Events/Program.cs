@@ -13,7 +13,7 @@ namespace Tn_Events
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -39,9 +39,10 @@ namespace Tn_Events
 
             builder.Services.AddIdentityCore<ApplicationUser>(options =>
                 {
-                    options.SignIn.RequireConfirmedAccount = true;
+                    options.SignIn.RequireConfirmedAccount = false;
                     options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
                 })
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddSignInManager()
                 .AddDefaultTokenProviders();
@@ -50,11 +51,28 @@ namespace Tn_Events
 
             // Repositories
             builder.Services.AddScoped<IEventRepository, EventRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             // Services
             builder.Services.AddScoped<IEventService, EventService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
 
             var app = builder.Build();
+
+            // Seed roles
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                string[] roles = ["Admin", "User"];
+
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                    {
+                        await roleManager.CreateAsync(new IdentityRole(role));
+                    }
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
