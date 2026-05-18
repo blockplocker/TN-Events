@@ -24,7 +24,6 @@ namespace Services.Services
         {
             var category = new Category
             {
-                Id = 0,
                 Name = name
             };
             await _categoryRepository.CreateAsync(category);

@@ -41,7 +41,6 @@ namespace Services.Services
         {
             var ev = new Event
             {
-                Id = 0,
                 Title = dto.Title,
                 Description = dto.Description,
                 Address = dto.Address,

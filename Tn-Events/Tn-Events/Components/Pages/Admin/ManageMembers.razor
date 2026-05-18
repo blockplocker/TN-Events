@@ -1,10 +1,8 @@
 @page "/admin/manage-members"
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.EntityFrameworkCore
-@using DAL.Data
-@inject UserManager<ApplicationUser> UserManager
-@inject ApplicationDbContext DbContext
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IMemberService MemberService
 @attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
@@ -74,49 +72,21 @@ else
 }
 
 @code {
-    private List<MemberView>? members;
+    private List<MemberDto>? members;
 
     protected override async Task OnInitializedAsync()
     {
-        var users = await DbContext.Users
-            .Include(u => u.Bookings)
-            .ToListAsync();
+        await LoadMembers();
+    }
 
-        members = [];
-
-        foreach (var user in users)
-        {
-            members.Add(new MemberView
-            {
-                UserId = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email ?? "",
-                IsAdmin = await UserManager.IsInRoleAsync(user, "Admin"),
-                BookingCount = user.Bookings.Count
-            });
-        }
+    private async Task LoadMembers()
+    {
+        members = await MemberService.GetAllMembersAsync();
     }
 
     private async Task ToggleAdmin(string userId, bool makeAdmin)
     {
-        var user = await UserManager.FindByIdAsync(userId);
-        if (user == null) return;
-
-        if (makeAdmin)
-            await UserManager.AddToRoleAsync(user, "Admin");
-        else
-            await UserManager.RemoveFromRoleAsync(user, "Admin");
-        await OnInitializedAsync();
-    }
-
-    private sealed class MemberView
-    {
-        public string UserId { get; set; } = "";
-        public string FirstName { get; set; } = "";
-        public string LastName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public bool IsAdmin { get; set; }
-        public int BookingCount { get; set; }
+        await MemberService.ToggleAdminAsync(userId, makeAdmin);
+        await LoadMembers();
     }
 }
