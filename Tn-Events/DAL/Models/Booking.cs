@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DAL.Data;
+﻿using DAL.Data;
 
 namespace DAL.Models
 {

@@ -1,6 +1,7 @@
 using DAL.Models;
 using DAL.Repositories.Interfaces;
 using Services.Dto.Response;
+using Services.Mappers;
 using Services.Services.Interfaces;
 
 namespace Services.Services
@@ -17,7 +18,7 @@ namespace Services.Services
         public async Task<List<CategoryDto>> GetAllCategoriesAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
-            return categories.Select(c => new CategoryDto { Id = c.Id, Name = c.Name }).ToList();
+            return CategoryMapper.ToDtoList(categories);
         }
 
         public async Task CreateCategoryAsync(string name)
