@@ -35,13 +35,14 @@ namespace Services.Services
             await _eventRepository.CreateAsync(EventMapper.Map(dto));
         }
 
-        public async Task UpdateEventAsync(UpdateEventRequestDto dto)
+        public async Task<bool> UpdateEventAsync(UpdateEventRequestDto dto)
         {
             var ev = await _eventRepository.GetByIdAsync(dto.Id);
-            if (ev == null) return;
+            if (ev == null) return false;
 
             var updatedEvent = EventMapper.Map(ev, dto);
             await _eventRepository.UpdateAsync(updatedEvent);
+            return true;
         }
 
         public async Task ToggleCancelEventAsync(int id)

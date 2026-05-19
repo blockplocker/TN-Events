@@ -44,7 +44,6 @@ namespace DAL.Repositories
 
         public async Task UpdateAsync(Event ev)
         {
-            _context.Events.Update(ev);
             await _context.SaveChangesAsync();
         }
 

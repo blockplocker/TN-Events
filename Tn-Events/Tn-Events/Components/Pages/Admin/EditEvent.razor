@@ -136,8 +136,11 @@ else
             CategoryId = Input.CategoryId
         };
 
-        await EventService.UpdateEventAsync(dto);
-        successMessage = "Eventet sparades.";
+        var isUpdated = await EventService.UpdateEventAsync(dto);
+        if (isUpdated)
+        {
+            successMessage = "Eventet sparades.";
+        }
     }
 
     private class EditEventInput
