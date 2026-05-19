@@ -5,15 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
 {
-    public class EventRepository : IEventRepository
+    public class EventRepository(ApplicationDbContext context) : IEventRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public EventRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
+        private readonly ApplicationDbContext _context = context;
         public async Task<List<Event>> GetAllAsync()
         {
             return await _context.Events
@@ -46,6 +40,12 @@ namespace DAL.Repositories
             _context.Events.Add(ev);
             await _context.SaveChangesAsync();
             return ev;
+        }
+
+        public async Task UpdateAsync(Event ev)
+        {
+            _context.Events.Update(ev);
+            await _context.SaveChangesAsync();
         }
 
         public async Task ToggleCancelAsync(int id)

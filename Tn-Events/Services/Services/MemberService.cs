@@ -4,14 +4,9 @@ using Services.Services.Interfaces;
 
 namespace Services.Services
 {
-    public class MemberService : IMemberService
+    public class MemberService(IMemberRepository memberRepository) : IMemberService
     {
-        private readonly IMemberRepository _memberRepository;
-
-        public MemberService(IMemberRepository memberRepository)
-        {
-            _memberRepository = memberRepository;
-        }
+        private readonly IMemberRepository _memberRepository = memberRepository;
 
         public async Task<List<MemberDto>> GetAllMembersAsync()
         {

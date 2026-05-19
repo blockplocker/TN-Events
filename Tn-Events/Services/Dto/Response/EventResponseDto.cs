@@ -10,6 +10,7 @@ namespace Services.Dto.Response
         public DateTime EndDate { get; set; }
         public int Capacity { get; set; }
         public bool IsCancelled { get; set; }
+        public int CategoryId { get; set; }
         public required string CategoryName { get; set; }
         public int BookedCount { get; set; }
         public int AvailableSpots => Capacity - BookedCount;

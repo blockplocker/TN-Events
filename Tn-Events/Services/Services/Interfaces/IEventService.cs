@@ -9,6 +9,7 @@ namespace Services.Services.Interfaces
         Task<List<EventResponseDto>> GetAllEventsAdminAsync();
         Task<EventResponseDto?> GetEventByIdAsync(int id);
         Task CreateEventAsync(CreateEventRequestDto dto);
+        Task UpdateEventAsync(UpdateEventRequestDto dto);
         Task ToggleCancelEventAsync(int id);
         Task<List<CategoryDto>> GetAllCategoriesAsync();
     }
