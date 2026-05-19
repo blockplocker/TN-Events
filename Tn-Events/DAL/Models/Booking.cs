@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DAL.Data;
+﻿using DAL.Data;
 
 namespace DAL.Models
 {
     public class Booking
     {
-        public required int Id { get; set; }
+        public int Id { get; set; }
         public required string UserId { get; set; }
         public required int EventId { get; set; }
         public int? WaitingNumber { get; set; }

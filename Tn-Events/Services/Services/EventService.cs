@@ -41,7 +41,6 @@ namespace Services.Services
         {
             var ev = new Event
             {
-                Id = 0,
                 Title = dto.Title,
                 Description = dto.Description,
                 Address = dto.Address,
@@ -63,7 +62,7 @@ namespace Services.Services
         public async Task<List<CategoryDto>> GetAllCategoriesAsync()
         {
             var categories = await _categoryRepository.GetAllAsync();
-            return categories.Select(c => new CategoryDto { Id = c.Id, Name = c.Name }).ToList();
+            return CategoryMapper.ToDtoList(categories);
         }
     }
 }

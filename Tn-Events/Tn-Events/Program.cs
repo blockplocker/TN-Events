@@ -52,10 +52,12 @@ namespace Tn_Events
             // Repositories
             builder.Services.AddScoped<IEventRepository, EventRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 
             // Services
             builder.Services.AddScoped<IEventService, EventService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IMemberService, MemberService>();
 
             var app = builder.Build();
 
