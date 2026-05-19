@@ -5,14 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository(ApplicationDbContext context) : ICategoryRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public CategoryRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        private readonly ApplicationDbContext _context = context;
 
         public async Task<List<Category>> GetAllAsync()
         {

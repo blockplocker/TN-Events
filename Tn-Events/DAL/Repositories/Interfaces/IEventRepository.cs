@@ -8,6 +8,7 @@ namespace DAL.Repositories.Interfaces
         Task<List<Event>> GetAllAdminAsync();
         Task<Event?> GetByIdAsync(int id);
         Task<Event> CreateAsync(Event ev);
+        Task UpdateAsync(Event ev);
         Task ToggleCancelAsync(int id);
     }
 }

@@ -7,17 +7,10 @@ using Services.Services.Interfaces;
 
 namespace Services.Services
 {
-    public class EventService : IEventService
+    public class EventService(IEventRepository eventRepository, ICategoryRepository categoryRepository) : IEventService
     {
-        private readonly IEventRepository _eventRepository;
-        private readonly ICategoryRepository _categoryRepository;
-
-        public EventService(IEventRepository eventRepository, ICategoryRepository categoryRepository)
-        {
-            _eventRepository = eventRepository;
-            _categoryRepository = categoryRepository;
-        }
-
+        private readonly IEventRepository _eventRepository = eventRepository;
+        private readonly ICategoryRepository _categoryRepository = categoryRepository;
         public async Task<List<EventResponseDto>> GetAllEventsAsync()
         {
             var events = await _eventRepository.GetAllAsync();
@@ -39,19 +32,17 @@ namespace Services.Services
 
         public async Task CreateEventAsync(CreateEventRequestDto dto)
         {
-            var ev = new Event
-            {
-                Title = dto.Title,
-                Description = dto.Description,
-                Address = dto.Address,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                Capacity = dto.Capacity,
-                IsCancelled = false,
-                CategoryId = dto.CategoryId
-            };
+            await _eventRepository.CreateAsync(EventMapper.Map(dto));
+        }
 
-            await _eventRepository.CreateAsync(ev);
+        public async Task<bool> UpdateEventAsync(UpdateEventRequestDto dto)
+        {
+            var ev = await _eventRepository.GetByIdAsync(dto.Id);
+            if (ev == null) return false;
+
+            var updatedEvent = EventMapper.Map(ev, dto);
+            await _eventRepository.UpdateAsync(updatedEvent);
+            return true;
         }
 
         public async Task ToggleCancelEventAsync(int id)

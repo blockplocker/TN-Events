@@ -5,16 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DAL.Repositories
 {
-    public class MemberRepository : IMemberRepository
+    public class MemberRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager) : IMemberRepository
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public MemberRepository(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+        private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
 
         public async Task<List<(ApplicationUser User, bool IsAdmin)>> GetAllWithRolesAsync()
         {
