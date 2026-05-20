@@ -6,6 +6,7 @@ namespace DAL.Repositories.Interfaces
     {
         Task<List<Event>> GetAllAsync();
         Task<List<Event>> GetAllAdminAsync();
+        Task<List<Event>> GetUpcomingAsync(int count);
         Task<Event?> GetByIdAsync(int id);
         Task<Event> CreateAsync(Event ev);
         Task UpdateAsync(Event ev);

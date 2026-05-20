@@ -56,11 +56,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var allEvents = await EventService.GetAllEventsAsync();
-        upcomingEvents = allEvents
-            .Where(e => !e.IsCancelled && e.StartDate > DateTime.Now)
-            .OrderBy(e => e.StartDate)
-            .Take(3)
-            .ToList();
+        upcomingEvents = await EventService.GetUpcomingEventsAsync(3);
     }
 }
