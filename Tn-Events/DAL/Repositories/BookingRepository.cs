@@ -17,6 +17,16 @@ namespace DAL.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Booking>> GetAllWaitingListAsync()
+        {
+            return await _context.Bookings
+                .Include(b => b.Event)
+                .Include(b => b.User)
+                .Where(b => b.BookingStatus == BookingStatus.Waitinglist)
+                .ToListAsync();
+        }
+
+
         public async Task<List<Booking>> GetByUserIdAsync(string userId)
         {
             return await _context.Bookings
@@ -50,10 +60,14 @@ namespace DAL.Repositories
             return booking;
         }
 
-        public async Task UpdateAsync(Booking booking)
+        public void UpdateRange(IEnumerable<Booking> bookings)
         {
-            _context.Bookings.Update(booking);
-            await _context.SaveChangesAsync();
+            _context.Bookings.UpdateRange(bookings);
+        }
+
+        public Task SaveChangesAsync()
+        {
+            return _context.SaveChangesAsync();
         }
     }
 }

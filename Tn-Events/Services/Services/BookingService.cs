@@ -18,6 +18,12 @@ namespace Services.Services
             return BookingMapper.ToDtoList(bookings);
         }
 
+        public async Task<List<BookingResponseDto>> GetAllWaitingListBookingsAsync()
+        {
+            var bookings = await _bookingRepository.GetAllWaitingListAsync();
+            return BookingMapper.ToDtoList(bookings);
+        }
+
         public async Task<List<BookingResponseDto>> GetUserBookingsAsync(string userId)
         {
             var bookings = await _bookingRepository.GetByUserIdAsync(userId);
@@ -60,13 +66,47 @@ namespace Services.Services
             return BookingMapper.ToDto(booking);
         }
 
-        public async Task<bool> UpdateBookingStatusAsync(int id, BookingStatus status)
+        public async Task<bool> CancelBookingAsync(int id)
         {
             var booking = await _bookingRepository.GetByIdAsync(id);
             if (booking == null) return false;
 
-            booking.BookingStatus = status;
-            await _bookingRepository.UpdateAsync(booking);
+            var previousStatus = booking.BookingStatus;
+            if (previousStatus != BookingStatus.Confirmed && previousStatus != BookingStatus.Waitinglist)
+            {
+                return false;
+            }
+
+            var eventBookings = await _bookingRepository.GetByEventIdAsync(booking.EventId);
+            var waitingListBookings = eventBookings
+                .Where(b => b.BookingStatus == BookingStatus.Waitinglist && b.Id != booking.Id)
+                .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
+                .ThenBy(b => b.Id)
+                .ToList();
+
+            var bookingsToUpdate = new List<Booking>();
+
+            booking.BookingStatus = BookingStatus.Cancelled;
+            booking.WaitingNumber = null;
+            bookingsToUpdate.Add(booking);
+
+            if (previousStatus == BookingStatus.Confirmed && waitingListBookings.Count > 0)
+            {
+                var FirstWaitingListBooking = waitingListBookings[0];
+                FirstWaitingListBooking.BookingStatus = BookingStatus.Confirmed;
+                FirstWaitingListBooking.WaitingNumber = null;
+                bookingsToUpdate.Add(FirstWaitingListBooking);
+                waitingListBookings.RemoveAt(0);
+            }
+
+            for (var i = 0; i < waitingListBookings.Count; i++)
+            {
+                waitingListBookings[i].WaitingNumber = i + 1;
+                bookingsToUpdate.Add(waitingListBookings[i]);
+            }
+
+            _bookingRepository.UpdateRange(bookingsToUpdate);
+            await _bookingRepository.SaveChangesAsync();
             return true;
         }
     }
