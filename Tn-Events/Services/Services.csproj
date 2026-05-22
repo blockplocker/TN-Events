@@ -7,10 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\Response\" />
-    <Folder Include="Mappers\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="Services\Interfaces\" />
+    <Compile Remove="Extensions\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Extensions\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,8 +1,15 @@
 ﻿@page "/events/{Id:int}"
+@using DAL.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Services.Dto.Request
 @using Services.Dto.Response
 @using Services.Services.Interfaces
 @inject IEventService EventService
+@inject IBookingService BookingService
 @rendermode InteractiveServer
+
+@attribute [Authorize]
 
 @if (ev == null)
 {
@@ -24,6 +31,43 @@ else
         <div class="alert alert-warning">Eventet är fullbokat!</div>
     }
 
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert @messageCssClass">@message</div>
+    }
+
+    @if (ev.IsCancelled)
+    {
+        <div class="alert alert-danger">Eventet är inställt.</div>
+    }
+    else
+    {
+        @if (currentBooking is null)
+        {
+            <button class="btn btn-primary me-2" @onclick="BookAsync" disabled="@isBusy">
+                @(ev.IsFull ? "Anmäl dig till väntelistan" : "Boka plats")
+            </button>
+        }
+        else
+        {
+            <div class="mb-3">
+                <strong>Din bokning:</strong>
+                @if (currentBooking.BookingStatus == BookingStatus.Confirmed)
+                {
+                    <span class="badge bg-success ms-2">Bekräftad</span>
+                }
+                else if (currentBooking.BookingStatus == BookingStatus.Waitinglist)
+                {
+                    <span class="badge bg-warning text-dark ms-2">Väntelista #@currentBooking.WaitingNumber</span>
+                }
+            </div>
+
+            <button class="btn btn-danger me-2" @onclick="CancelAsync" disabled="@isBusy">
+                Avboka
+            </button>
+        }
+    }
+
     <a href="/events" class="btn btn-secondary">← Tillbaka till alla event</a>
 }
 
@@ -31,10 +75,106 @@ else
     [Parameter]
     public int Id { get; set; }
 
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     private EventResponseDto? ev;
+    private BookingResponseDto? currentBooking;
+    private string? currentUserId;
+    private string? message;
+    private string messageCssClass = "alert-info";
+    private bool isBusy;
 
     protected override async Task OnInitializedAsync()
     {
         ev = await EventService.GetEventByIdAsync(Id);
+
+        var authState = await AuthenticationStateTask;
+        currentUserId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        await LoadCurrentBookingAsync();
+    }
+
+    private async Task LoadCurrentBookingAsync()
+    {
+        currentBooking = null;
+
+        if (string.IsNullOrWhiteSpace(currentUserId))
+        {
+            return;
+        }
+
+        var bookings = await BookingService.GetUserBookingsAsync(currentUserId);
+        currentBooking = bookings
+            .Where(b => b.EventId == Id && b.BookingStatus != BookingStatus.Cancelled)
+            .OrderByDescending(b => b.Id)
+            .FirstOrDefault();
+    }
+
+    private async Task BookAsync()
+    {
+        if (string.IsNullOrWhiteSpace(currentUserId) || ev is null)
+        {
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+            message = null;
+
+            await BookingService.CreateBookingAsync(new CreateBookingRequestDto
+            {
+                UserId = currentUserId,
+                EventId = Id
+            });
+
+            ev = await EventService.GetEventByIdAsync(Id);
+            await LoadCurrentBookingAsync();
+            SetMessage("Din bokning har registrerats.", "alert-success");
+        }
+        catch (InvalidOperationException ex)
+        {
+            SetMessage(ex.Message, "alert-warning");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private async Task CancelAsync()
+    {
+        if (currentBooking is null)
+        {
+            return;
+        }
+
+        try
+        {
+            isBusy = true;
+            message = null;
+
+            var cancelled = await BookingService.CancelBookingAsync(currentBooking.Id);
+            if (!cancelled)
+            {
+                SetMessage("Bokningen kunde inte avbokas.", "alert-warning");
+                return;
+            }
+
+            ev = await EventService.GetEventByIdAsync(Id);
+            await LoadCurrentBookingAsync();
+            SetMessage("Din bokning har avbokats.", "alert-success");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    private void SetMessage(string text, string cssClass)
+    {
+        message = text;
+        messageCssClass = cssClass;
     }
 }
