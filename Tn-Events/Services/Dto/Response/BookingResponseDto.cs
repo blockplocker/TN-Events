@@ -5,10 +5,10 @@ namespace Services.Dto.Response
     public class BookingResponseDto
     {
         public int Id { get; set; }
-        public string UserId { get; set; } = string.Empty;
-        public string UserName { get; set; } = string.Empty;
+        public required string UserId { get; set; }
+        public required string UserName { get; set; }   
         public int EventId { get; set; }
-        public string EventTitle { get; set; } = string.Empty;
+        public required string EventTitle { get; set; }
         public BookingStatus BookingStatus { get; set; }
         public int? WaitingNumber { get; set; }
     }

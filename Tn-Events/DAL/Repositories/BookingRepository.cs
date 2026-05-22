@@ -2,6 +2,7 @@ using DAL.Data;
 using DAL.Models;
 using DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace DAL.Repositories
 {
@@ -68,6 +69,23 @@ namespace DAL.Repositories
         public Task SaveChangesAsync()
         {
             return _context.SaveChangesAsync();
+        }
+
+        public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
+            try
+            {
+                var result = await action();
+                await transaction.CommitAsync();
+                return result;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }

@@ -12,5 +12,6 @@ namespace DAL.Repositories.Interfaces
         Task<Booking> CreateAsync(Booking booking);
         void UpdateRange(IEnumerable<Booking> bookings);
         Task SaveChangesAsync();
+        Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action);
     }
 }

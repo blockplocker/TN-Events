@@ -44,26 +44,39 @@ namespace Services.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto)
         {
-            var ev = await _eventRepository.GetByIdAsync(dto.EventId)
-                ?? throw new InvalidOperationException("Event not found.");
-
-            if (ev.IsCancelled)
+            return await _bookingRepository.ExecuteInTransactionAsync(async () =>
             {
-                throw new InvalidOperationException("Cannot book a cancelled event.");
-            }
+                var ev = await _eventRepository.GetByIdAsync(dto.EventId)
+                    ?? throw new InvalidOperationException("Event not found.");
 
-            var existingBookings = await _bookingRepository.GetByEventIdAsync(dto.EventId);
-            var confirmedCount = existingBookings.Count(b => b.BookingStatus == BookingStatus.Confirmed);
-            var status = confirmedCount < ev.Capacity ? BookingStatus.Confirmed : BookingStatus.Waitinglist;
+                if (ev.IsCancelled)
+                {
+                    throw new InvalidOperationException("Cannot book a cancelled event.");
+                }
 
-            int? waitingNumber = null;
-            if (status == BookingStatus.Waitinglist)
-            {
-                waitingNumber = existingBookings.Count(b => b.BookingStatus == BookingStatus.Waitinglist) + 1;
-            }
+                var userBookings = await _bookingRepository.GetByUserIdAsync(dto.UserId);
+                var existingActiveBooking = userBookings.FirstOrDefault(b =>
+                    b.EventId == dto.EventId &&
+                    b.BookingStatus != BookingStatus.Cancelled);
 
-            var booking = await _bookingRepository.CreateAsync(BookingMapper.Map(dto, status, waitingNumber));
-            return BookingMapper.ToDto(booking);
+                if (existingActiveBooking != null)
+                {
+                    throw new InvalidOperationException("You already have an active booking for this event.");
+                }
+
+                var existingBookings = await _bookingRepository.GetByEventIdAsync(dto.EventId);
+                var confirmedCount = existingBookings.Count(b => b.BookingStatus == BookingStatus.Confirmed);
+                var status = confirmedCount < ev.Capacity ? BookingStatus.Confirmed : BookingStatus.Waitinglist;
+
+                int? waitingNumber = null;
+                if (status == BookingStatus.Waitinglist)
+                {
+                    waitingNumber = existingBookings.Count(b => b.BookingStatus == BookingStatus.Waitinglist) + 1;
+                }
+
+                var booking = await _bookingRepository.CreateAsync(BookingMapper.Map(dto, status, waitingNumber));
+                return BookingMapper.ToDto(booking);
+            });
         }
 
         public async Task<bool> CancelBookingAsync(int id)
