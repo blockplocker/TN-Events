@@ -18,6 +18,17 @@ namespace DAL.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Event>> GetUpcomingAsync(int count)
+        {
+            return await _context.Events
+                .Include(e => e.Category)
+                .Include(e => e.Bookings)
+                .Where(e => !e.IsCancelled && e.StartDate > DateTime.UtcNow)
+                .OrderBy(e => e.StartDate)
+                .Take(count)
+                .ToListAsync();
+        }
+
         public async Task<List<Event>> GetAllAdminAsync()
         {
             return await _context.Events

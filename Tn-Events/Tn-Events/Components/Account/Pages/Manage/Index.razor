@@ -23,6 +23,14 @@
                 <label for="username" class="form-label">Username</label>
             </div>
             <div class="form-floating mb-3">
+                <input type="text" value="@user?.FirstName" id="firstName" class="form-control" disabled />
+                <label for="firstName" class="form-label">Förnamn</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" value="@user?.LastName" id="lastName" class="form-control" disabled />
+                <label for="lastName" class="form-label">Efternamn</label>
+            </div>
+            <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
                 <label for="Input.PhoneNumber" class="form-label">Phone number</label>
                 <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />

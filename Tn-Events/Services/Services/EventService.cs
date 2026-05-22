@@ -17,6 +17,12 @@ namespace Services.Services
             return EventMapper.ToDtoList(events);
         }
 
+        public async Task<List<EventResponseDto>> GetUpcomingEventsAsync(int count)
+        {
+            var events = await _eventRepository.GetUpcomingAsync(count);
+            return EventMapper.ToDtoList(events);
+        }
+
         public async Task<List<EventResponseDto>> GetAllEventsAdminAsync()
         {
             var events = await _eventRepository.GetAllAdminAsync();
