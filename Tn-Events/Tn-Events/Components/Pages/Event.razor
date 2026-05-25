@@ -1,9 +1,12 @@
-﻿@page "/events"
+@page "/events"
+@using DAL.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Services.Dto.Response
 @using Services.Services.Interfaces
 @inject IEventService EventService
+@inject IBookingService BookingService
 @rendermode InteractiveServer
-@using Microsoft.AspNetCore.Authorization
 
 @attribute [Authorize]
 
@@ -36,6 +39,17 @@ else
                         </h5>
                         <p class="card-text">@ev.CategoryName</p>
                         <p class="card-text"><small>@ev.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
+                        @if (userBookings.TryGetValue(ev.Id, out var booking))
+                        {
+                            @if (booking.BookingStatus == BookingStatus.Confirmed)
+                            {
+                                <span class="badge bg-success mb-2">Bokad</span>
+                            }
+                            else if (booking.BookingStatus == BookingStatus.Waitinglist)
+                            {
+                                <span class="badge bg-warning text-dark mb-2">Köplats: @booking.WaitingNumber</span>
+                            }
+                        }
                         @if (!ev.IsCancelled)
                         {
                             <p class="card-text">Platser kvar: @ev.AvailableSpots / @ev.Capacity</p>
@@ -49,10 +63,26 @@ else
 }
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     private List<EventResponseDto>? events;
+    private Dictionary<int, BookingResponseDto> userBookings = new();
 
     protected override async Task OnInitializedAsync()
     {
         events = await EventService.GetAllEventsAsync();
+
+        var authState = await AuthenticationStateTask;
+        var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!string.IsNullOrWhiteSpace(userId))
+        {
+            var bookings = await BookingService.GetUserBookingsAsync(userId);
+            userBookings = bookings
+                .Where(b => b.BookingStatus != BookingStatus.Cancelled)
+                .GroupBy(b => b.EventId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
+        }
     }
 }
