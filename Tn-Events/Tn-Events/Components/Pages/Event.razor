@@ -78,11 +78,7 @@ else
 
         if (!string.IsNullOrWhiteSpace(userId))
         {
-            var bookings = await BookingService.GetUserBookingsAsync(userId);
-            userBookings = bookings
-                .Where(b => b.BookingStatus != BookingStatus.Cancelled)
-                .GroupBy(b => b.EventId)
-                .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
+            userBookings = await BookingService.GetUserActiveBookingsByEventAsync(userId);
         }
     }
 }
