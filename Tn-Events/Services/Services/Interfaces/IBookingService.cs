@@ -14,5 +14,7 @@ namespace Services.Services.Interfaces
         Task<BookingResponseDto> CreateBookingAsync(CreateBookingRequestDto dto);
         Task<bool> CancelBookingAsync(int id);
         Task<Dictionary<int, BookingResponseDto>> GetUserActiveBookingsByEventAsync(string userId);
+        Task<List<BookingResponseDto>> GetUserConfirmedBookingsAsync(string userId);
+        Task<List<BookingResponseDto>> GetUserWaitingListBookingsAsync(string userId);
     }
 }

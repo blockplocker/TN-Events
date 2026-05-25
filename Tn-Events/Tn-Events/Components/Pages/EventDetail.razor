@@ -76,7 +76,7 @@ else
     public int Id { get; set; }
 
     [SupplyParameterFromQuery(Name = "from")]
-    public required string From { get; set; }
+    public string? From { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;

@@ -38,7 +38,7 @@ else
                             <p class="card-text text-muted">@b.CategoryName</p>
                             <p class="card-text"><small>@b.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
                             <p class="card-text">@b.Description</p>
-<a href="/events/@b.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
+                            <a href="/events/@b.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
                             <span class="badge bg-success mt-2 align-self-start">Bekräftad</span>
                         </div>
                     </div>
@@ -64,7 +64,7 @@ else
                             <p class="card-text text-muted">@w.CategoryName</p>
                             <p class="card-text"><small>@w.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
                             <p class="card-text">@w.Description</p>
-<a href="/events/@w.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
+                            <a href="/events/@w.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
                             <span class="badge bg-warning text-dark mt-2 align-self-start">Köplats: @w.WaitingNumber</span>
                         </div>
                     </div>
@@ -88,9 +88,7 @@ else
 
         if (string.IsNullOrWhiteSpace(userId)) return;
 
-        var bookings = await BookingService.GetUserBookingsAsync(userId);
-
-        confirmed = bookings.Where(b => b.BookingStatus == BookingStatus.Confirmed).ToList();
-        waiting = bookings.Where(b => b.BookingStatus == BookingStatus.Waitinglist).ToList();
+        confirmed = await BookingService.GetUserConfirmedBookingsAsync(userId);
+        waiting = await BookingService.GetUserWaitingListBookingsAsync(userId);
     }
 }
