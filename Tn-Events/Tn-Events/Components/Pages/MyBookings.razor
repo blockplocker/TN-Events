@@ -1,0 +1,94 @@
+@page "/mybookings"
+@using DAL.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IBookingService BookingService
+@rendermode InteractiveServer
+
+@attribute [Authorize]
+
+<PageTitle>TN Events - Mina bokningar</PageTitle>
+
+<div class="text-center py-5 mb-4 bg-light rounded-3">
+    <h1 class="display-4 fw-bold">Mina bokningar</h1>
+</div>
+
+@if (confirmed == null)
+{
+    <p>Laddar...</p>
+}
+else
+{
+    <h4 class="mb-3">Bokade event</h4>
+    @if (!confirmed.Any())
+    {
+        <p class="text-muted">Du har inga bokade event.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var b in confirmed)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@b.EventTitle</h5>
+                            <p class="card-text text-muted">@b.CategoryName</p>
+                            <p class="card-text"><small>@b.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
+                            <p class="card-text">@b.Description</p>
+                            <a href="/events/@b.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
+                            <span class="badge bg-success mt-2 align-self-start">Bekräftad</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <h4 class="mb-3 mt-4">Köplatser</h4>
+    @if (!waiting.Any())
+    {
+        <p class="text-muted">Du har inga köplatser.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var w in waiting)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-warning">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@w.EventTitle</h5>
+                            <p class="card-text text-muted">@w.CategoryName</p>
+                            <p class="card-text"><small>@w.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
+                            <p class="card-text">@w.Description</p>
+                            <a href="/events/@w.EventId?from=mybookings" class="btn btn-primary mt-auto align-self-start">Visa</a>
+                            <span class="badge bg-warning text-dark mt-2 align-self-start">Köplats: @w.WaitingNumber</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private List<BookingResponseDto> confirmed = new();
+    private List<BookingResponseDto> waiting = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrWhiteSpace(userId)) return;
+
+        confirmed = await BookingService.GetUserConfirmedBookingsAsync(userId);
+        waiting = await BookingService.GetUserWaitingListBookingsAsync(userId);
+    }
+}

@@ -29,7 +29,11 @@ namespace Services.Mappers
                 EventId = booking.EventId,
                 EventTitle = booking.Event?.Title ?? string.Empty,
                 BookingStatus = booking.BookingStatus,
-                WaitingNumber = booking.WaitingNumber
+                WaitingNumber = booking.WaitingNumber,
+                StartDate = booking.Event?.StartDate ?? default,
+                EndDate = booking.Event?.EndDate ?? default,
+                Description = booking.Event?.Description ?? string.Empty,
+                CategoryName = booking.Event?.Category?.Name ?? string.Empty
             };
         }
 

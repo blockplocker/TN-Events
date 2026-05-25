@@ -79,6 +79,31 @@ namespace Services.Services
             });
         }
 
+        public async Task<Dictionary<int, BookingResponseDto>> GetUserActiveBookingsByEventAsync(string userId)
+        {
+            var bookings = await _bookingRepository.GetByUserIdAsync(userId);
+            return BookingMapper.ToDtoList(bookings)
+                .Where(b => b.BookingStatus != BookingStatus.Cancelled)
+                .GroupBy(b => b.EventId)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
+        }
+
+        public async Task<List<BookingResponseDto>> GetUserConfirmedBookingsAsync(string userId)
+        {
+            var bookings = await _bookingRepository.GetByUserIdAsync(userId);
+            return BookingMapper.ToDtoList(bookings)
+                .Where(b => b.BookingStatus == BookingStatus.Confirmed)
+                .ToList();
+        }
+
+        public async Task<List<BookingResponseDto>> GetUserWaitingListBookingsAsync(string userId)
+        {
+            var bookings = await _bookingRepository.GetByUserIdAsync(userId);
+            return BookingMapper.ToDtoList(bookings)
+                .Where(b => b.BookingStatus == BookingStatus.Waitinglist)
+                .ToList();
+        }
+
         public async Task<bool> CancelBookingAsync(int id)
         {
             var booking = await _bookingRepository.GetByIdAsync(id);

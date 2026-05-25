@@ -11,5 +11,9 @@ namespace Services.Dto.Response
         public required string EventTitle { get; set; }
         public BookingStatus BookingStatus { get; set; }
         public int? WaitingNumber { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public required string Description { get; set; }
+        public required string CategoryName { get; set; }
     }
 }

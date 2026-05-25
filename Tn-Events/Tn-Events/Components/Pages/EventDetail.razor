@@ -68,15 +68,21 @@ else
         }
     }
 
-    <a href="/events" class="btn btn-secondary">← Tillbaka till alla event</a>
+    <a href="@BackUrl" class="btn btn-secondary">← @BackText</a>
 }
 
 @code {
     [Parameter]
     public int Id { get; set; }
 
+    [SupplyParameterFromQuery(Name = "from")]
+    public string? From { get; set; }
+
     [CascadingParameter]
     private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    private string BackUrl => From == "mybookings" ? "/mybookings" : "/events";
+    private string BackText => From == "mybookings" ? "Tillbaka till mina bokningar" : "Tillbaka till alla event";
 
     private EventResponseDto? ev;
     private BookingResponseDto? currentBooking;
