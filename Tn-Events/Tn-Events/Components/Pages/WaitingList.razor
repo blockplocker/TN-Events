@@ -1,0 +1,50 @@
+﻿@page "/waitlist"
+@using Services.Dto.Response
+@using Services.Services.Interfaces
+@inject IBookingService BookingService
+@rendermode InteractiveServer
+
+<PageTitle>TN Events</PageTitle>
+
+<div class="text-center py-5 mb-4 bg-light rounded-3">
+    <h1 class="display-4 fw-bold">Dina köplatser</h1>
+</div>
+
+@if (waitingList == null)
+{
+    <p>Laddar...</p>
+}
+else if (!waitingList.Any())
+{
+    <p>Du har inga bokade event just nu.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var wl in waitingList)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-warning">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@wl.EventTitle</h5>
+                        <p class="card-text text-muted">@wl.CategoryName</p>
+                        <p class="card-text"><small>@wl.StartDate.ToString("yyyy-MM-dd HH:mm")</small></p>
+                        <p class="card-text">@wl.Description</p>
+                        <p class="card-text">
+                            <span class="badge bg-info text-dark">Köplats: @wl.WaitingNumber</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<BookingResponseDto>? waitingList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        waitingList = await BookingService.GetAllWaitingListBookingsAsync();
+    }
+}
