@@ -13,7 +13,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetAllAsync()
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .ToListAsync();
         }
@@ -21,7 +21,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetAllWaitingListAsync()
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.BookingStatus == BookingStatus.Waitinglist)
                 .ToListAsync();
@@ -31,7 +31,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetByUserIdAsync(string userId)
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.UserId == userId)
                 .ToListAsync();
@@ -40,7 +40,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetConfirmedBookingsFromUserIdAsync(string userId)
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Confirmed)
                 .ToListAsync();
@@ -49,7 +49,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetWaitingListBookingsFromUserIdAsync(string userId)
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Waitinglist)
                 .ToListAsync();
@@ -58,7 +58,7 @@ namespace DAL.Repositories
         public async Task<List<Booking>> GetByEventIdAsync(int eventId)
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .Where(b => b.EventId == eventId)
                 .ToListAsync();
@@ -67,7 +67,7 @@ namespace DAL.Repositories
         public async Task<Booking?> GetByIdAsync(int id)
         {
             return await _context.Bookings
-                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.Event!).ThenInclude(e => e.Category)
                 .Include(b => b.User)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
