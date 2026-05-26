@@ -5,6 +5,7 @@
 @using Services.Dto.Response
 @using Services.Services.Interfaces
 @inject IEventService EventService
+@inject ICategoryService CategoryService
 @attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
@@ -101,7 +102,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        categories = await EventService.GetAllCategoriesAsync();
+        categories = await CategoryService.GetAllCategoriesAsync();
 
         var ev = await EventService.GetEventByIdAsync(Id);
         if (ev == null)

@@ -55,11 +55,6 @@ namespace Services.Services
         {
             await _eventRepository.ToggleCancelAsync(id);
         }
-
-        public async Task<List<CategoryDto>> GetAllCategoriesAsync()
-        {
-            var categories = await _categoryRepository.GetAllAsync();
-            return CategoryMapper.ToDtoList(categories);
-        }
     }
+
 }
