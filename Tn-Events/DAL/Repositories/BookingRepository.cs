@@ -37,6 +37,24 @@ namespace DAL.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Booking>> GetConfirmedBookingsFromUserIdAsync(string userId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Confirmed)
+                .ToListAsync();
+        }
+
+        public async Task<List<Booking>> GetWaitingListBookingsFromUserIdAsync(string userId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Event).ThenInclude(e => e.Category)
+                .Include(b => b.User)
+                .Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Waitinglist)
+                .ToListAsync();
+        }
+
         public async Task<List<Booking>> GetByEventIdAsync(int eventId)
         {
             return await _context.Bookings

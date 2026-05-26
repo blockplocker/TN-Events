@@ -90,18 +90,14 @@ namespace Services.Services
 
         public async Task<List<BookingResponseDto>> GetUserConfirmedBookingsAsync(string userId)
         {
-            var bookings = await _bookingRepository.GetByUserIdAsync(userId);
-            return BookingMapper.ToDtoList(bookings)
-                .Where(b => b.BookingStatus == BookingStatus.Confirmed)
-                .ToList();
+            var bookings = await _bookingRepository.GetConfirmedBookingsFromUserIdAsync(userId);
+            return BookingMapper.ToDtoList(bookings).ToList();
         }
 
         public async Task<List<BookingResponseDto>> GetUserWaitingListBookingsAsync(string userId)
         {
-            var bookings = await _bookingRepository.GetByUserIdAsync(userId);
-            return BookingMapper.ToDtoList(bookings)
-                .Where(b => b.BookingStatus == BookingStatus.Waitinglist)
-                .ToList();
+            var bookings = await _bookingRepository.GetWaitingListBookingsFromUserIdAsync(userId);
+            return BookingMapper.ToDtoList(bookings).ToList();
         }
 
         public async Task<bool> CancelBookingAsync(int id)

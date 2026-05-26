@@ -104,6 +104,16 @@ internal sealed class BookingRepositoryFake : IBookingRepository
         LastGetByUserId = userId;
         return Task.FromResult(Bookings.Where(b => b.UserId == userId).ToList());
     }
+    public Task<List<Booking>> GetConfirmedBookingsFromUserIdAsync(string userId)
+    {
+        LastGetByUserId = userId;
+        return Task.FromResult(Bookings.Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Confirmed).ToList());
+    }
+    public Task<List<Booking>> GetWaitingListBookingsFromUserIdAsync(string userId)
+    {
+        LastGetByUserId = userId;
+        return Task.FromResult(Bookings.Where(b => b.UserId == userId && b.BookingStatus == BookingStatus.Waitinglist).ToList());
+    }
 
     public Task<List<Booking>> GetByEventIdAsync(int eventId)
     {
