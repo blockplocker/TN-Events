@@ -9,6 +9,8 @@ namespace DAL.Repositories.Interfaces
         Task<List<Booking>> GetByUserIdAsync(string userId);
         Task<List<Booking>> GetByEventIdAsync(int eventId);
         Task<Booking?> GetByIdAsync(int id);
+        Task<List<Booking>> GetConfirmedBookingsFromUserIdAsync(string userId);
+        Task<List<Booking>> GetWaitingListBookingsFromUserIdAsync(string userId);
         Task<Booking> CreateAsync(Booking booking);
         void UpdateRange(IEnumerable<Booking> bookings);
         Task SaveChangesAsync();

@@ -12,6 +12,5 @@ namespace Services.Services.Interfaces
         Task CreateEventAsync(CreateEventRequestDto dto);
         Task<bool> UpdateEventAsync(UpdateEventRequestDto dto);
         Task ToggleCancelEventAsync(int id);
-        Task<List<CategoryDto>> GetAllCategoriesAsync();
     }
 }

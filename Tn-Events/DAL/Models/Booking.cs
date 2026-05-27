@@ -9,7 +9,7 @@ namespace DAL.Models
         public required int EventId { get; set; }
         public int? WaitingNumber { get; set; }
         public required BookingStatus BookingStatus { get; set; }
-        public  ApplicationUser? User { get; set; }
-        public  Event? Event { get; set; }
+        public ApplicationUser? User { get; set; }
+        public Event? Event { get; set; }
     }
 }
