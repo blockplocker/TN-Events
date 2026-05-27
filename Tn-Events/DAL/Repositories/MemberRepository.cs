@@ -12,19 +12,23 @@ namespace DAL.Repositories
 
         public async Task<List<(ApplicationUser User, bool IsAdmin)>> GetAllWithRolesAsync()
         {
-            var users = await _context.Users
-                .Include(u => u.Bookings)
-                .ToListAsync();
+            var query = from user in _context.Users.Include(u => u.Bookings)
+                        join userRole in _context.UserRoles on user.Id equals userRole.UserId into userRoles
+                        from userRole in userRoles.DefaultIfEmpty()
+                        join role in _context.Roles on userRole!.RoleId equals role.Id into roles
+                        from role in roles.DefaultIfEmpty()
+                        group role by user into grouped
+                        select new
+                        {
+                            User = grouped.Key,
+                            IsAdmin = grouped.Any(r => r != null && r.Name == "Admin")
+                        };
 
-            var result = new List<(ApplicationUser, bool)>();
+            var usersWithRoles = await query.ToListAsync();
 
-            foreach (var user in users)
-            {
-                var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-                result.Add((user, isAdmin));
-            }
-
-            return result;
+            return usersWithRoles
+                .Select(x => (x.User, x.IsAdmin))
+                .ToList();
         }
 
         public async Task<bool> ToggleAdminAsync(string userId, bool makeAdmin)
