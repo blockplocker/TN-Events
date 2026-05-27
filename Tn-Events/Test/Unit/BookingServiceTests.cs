@@ -1,6 +1,8 @@
 using DAL.Models;
 using Services.Dto.Request;
 using Services.Services;
+using DalBookingStatus = DAL.Models.BookingStatus;
+using DtoBookingStatus = Services.Dto.BookingStatus;
 
 namespace Test.Unit;
 
@@ -11,7 +13,7 @@ public class BookingServiceTests
     {
         var bookingRepository = new BookingRepositoryFake();
         var eventRepository = new EventRepositoryFake();
-        var booking = ServiceTestData.Booking(id: 7, userId: "user-7", eventId: 9, status: BookingStatus.Confirmed);
+        var booking = ServiceTestData.Booking(id: 7, userId: "user-7", eventId: 9, status: DalBookingStatus.Confirmed);
         bookingRepository.Bookings.Add(booking);
 
         var service = new BookingService(bookingRepository, eventRepository);
@@ -24,7 +26,7 @@ public class BookingServiceTests
         Assert.Equal("user-7", dto.UserId);
         Assert.Equal("First Last", dto.UserName);
         Assert.Equal(9, dto.EventId);
-        Assert.Equal(BookingStatus.Confirmed, dto.BookingStatus);
+        Assert.Equal(DtoBookingStatus.Confirmed, dto.BookingStatus);
         Assert.Equal("Concert", dto.EventTitle);
     }
 
@@ -43,7 +45,7 @@ public class BookingServiceTests
             EventId = 3
         });
 
-        Assert.Equal(BookingStatus.Confirmed, result.BookingStatus);
+        Assert.Equal(DtoBookingStatus.Confirmed, result.BookingStatus);
         Assert.Null(result.WaitingNumber);
         Assert.Single(bookingRepository.Bookings);
         Assert.Equal(3, bookingRepository.LastCreated?.EventId);
@@ -56,7 +58,7 @@ public class BookingServiceTests
         var bookingRepository = new BookingRepositoryFake();
         var eventRepository = new EventRepositoryFake();
         eventRepository.Events.Add(ServiceTestData.Event(id: 4, capacity: 1, bookedCount: 1));
-        bookingRepository.Bookings.Add(ServiceTestData.Booking(id: 11, userId: "other-user", eventId: 4, status: BookingStatus.Confirmed));
+        bookingRepository.Bookings.Add(ServiceTestData.Booking(id: 11, userId: "other-user", eventId: 4, status: DalBookingStatus.Confirmed));
 
         var service = new BookingService(bookingRepository, eventRepository);
 
@@ -66,9 +68,9 @@ public class BookingServiceTests
             EventId = 4
         });
 
-        Assert.Equal(BookingStatus.Waitinglist, result.BookingStatus);
+        Assert.Equal(DtoBookingStatus.Waitinglist, result.BookingStatus);
         Assert.Equal(1, result.WaitingNumber);
-        Assert.Equal(BookingStatus.Waitinglist, bookingRepository.LastCreated?.BookingStatus);
+        Assert.Equal(DalBookingStatus.Waitinglist, bookingRepository.LastCreated?.BookingStatus);
         Assert.Equal(1, bookingRepository.LastCreated?.WaitingNumber);
     }
 
@@ -78,7 +80,7 @@ public class BookingServiceTests
         var bookingRepository = new BookingRepositoryFake();
         var eventRepository = new EventRepositoryFake();
         eventRepository.Events.Add(ServiceTestData.Event(id: 5, capacity: 3));
-        bookingRepository.Bookings.Add(ServiceTestData.Booking(id: 20, userId: "user-3", eventId: 5, status: BookingStatus.Confirmed));
+        bookingRepository.Bookings.Add(ServiceTestData.Booking(id: 20, userId: "user-3", eventId: 5, status: DalBookingStatus.Confirmed));
 
         var service = new BookingService(bookingRepository, eventRepository);
 
@@ -100,10 +102,10 @@ public class BookingServiceTests
         bookingRepository.Bookings.AddRange(
             new[]
             {
-                ServiceTestData.Booking(id: 1, userId: "user-1", eventId: 10, status: BookingStatus.Confirmed),
-                ServiceTestData.Booking(id: 2, userId: "user-2", eventId: 10, status: BookingStatus.Waitinglist, waitingNumber: 1),
-                ServiceTestData.Booking(id: 3, userId: "user-3", eventId: 10, status: BookingStatus.Waitinglist, waitingNumber: 2),
-                ServiceTestData.Booking(id: 4, userId: "user-4", eventId: 10, status: BookingStatus.Cancelled, waitingNumber: null)
+                ServiceTestData.Booking(id: 1, userId: "user-1", eventId: 10, status: DalBookingStatus.Confirmed),
+                ServiceTestData.Booking(id: 2, userId: "user-2", eventId: 10, status: DalBookingStatus.Waitinglist, waitingNumber: 1),
+                ServiceTestData.Booking(id: 3, userId: "user-3", eventId: 10, status: DalBookingStatus.Waitinglist, waitingNumber: 2),
+                ServiceTestData.Booking(id: 4, userId: "user-4", eventId: 10, status: DalBookingStatus.Cancelled, waitingNumber: null)
             });
 
         var service = new BookingService(bookingRepository, eventRepository);
@@ -119,11 +121,11 @@ public class BookingServiceTests
         var promoted = bookingRepository.Bookings.Single(b => b.Id == 2);
         var remaining = bookingRepository.Bookings.Single(b => b.Id == 3);
 
-        Assert.Equal(BookingStatus.Cancelled, cancelled.BookingStatus);
+        Assert.Equal(DalBookingStatus.Cancelled, cancelled.BookingStatus);
         Assert.Null(cancelled.WaitingNumber);
-        Assert.Equal(BookingStatus.Confirmed, promoted.BookingStatus);
+        Assert.Equal(DalBookingStatus.Confirmed, promoted.BookingStatus);
         Assert.Null(promoted.WaitingNumber);
-        Assert.Equal(BookingStatus.Waitinglist, remaining.BookingStatus);
+        Assert.Equal(DalBookingStatus.Waitinglist, remaining.BookingStatus);
         Assert.Equal(1, remaining.WaitingNumber);
     }
 
