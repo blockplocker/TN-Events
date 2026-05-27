@@ -104,46 +104,49 @@ namespace Services.Services
 
         public async Task<bool> CancelBookingAsync(int id)
         {
-            var booking = await _bookingRepository.GetByIdAsync(id);
-            if (booking == null) return false;
-
-            var previousStatus = booking.BookingStatus;
-            if (previousStatus != DalBookingStatus.Confirmed && previousStatus != DalBookingStatus.Waitinglist)
+            return await _bookingRepository.ExecuteInTransactionAsync(async () =>
             {
-                return false;
-            }
+                var booking = await _bookingRepository.GetByIdAsync(id);
+                if (booking == null) return false;
 
-            var eventBookings = await _bookingRepository.GetByEventIdAsync(booking.EventId);
-            var waitingListBookings = eventBookings
-                .Where(b => b.BookingStatus == DalBookingStatus.Waitinglist && b.Id != booking.Id)
-                .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
-                .ThenBy(b => b.Id)
-                .ToList();
+                var previousStatus = booking.BookingStatus;
+                if (previousStatus != DalBookingStatus.Confirmed && previousStatus != DalBookingStatus.Waitinglist)
+                {
+                    return false;
+                }
 
-            var bookingsToUpdate = new List<Booking>();
+                var eventBookings = await _bookingRepository.GetByEventIdAsync(booking.EventId);
+                var waitingListBookings = eventBookings
+                    .Where(b => b.BookingStatus == DalBookingStatus.Waitinglist && b.Id != booking.Id)
+                    .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
+                    .ThenBy(b => b.Id)
+                    .ToList();
 
-            booking.BookingStatus = DalBookingStatus.Cancelled;
-            booking.WaitingNumber = null;
-            bookingsToUpdate.Add(booking);
+                var bookingsToUpdate = new List<Booking>();
 
-            if (previousStatus == DalBookingStatus.Confirmed && waitingListBookings.Count > 0)
-            {
-                var FirstWaitingListBooking = waitingListBookings[0];
-                FirstWaitingListBooking.BookingStatus = DalBookingStatus.Confirmed;
-                FirstWaitingListBooking.WaitingNumber = null;
-                bookingsToUpdate.Add(FirstWaitingListBooking);
-                waitingListBookings.RemoveAt(0);
-            }
+                booking.BookingStatus = DalBookingStatus.Cancelled;
+                booking.WaitingNumber = null;
+                bookingsToUpdate.Add(booking);
 
-            for (var i = 0; i < waitingListBookings.Count; i++)
-            {
-                waitingListBookings[i].WaitingNumber = i + 1;
-                bookingsToUpdate.Add(waitingListBookings[i]);
-            }
+                if (previousStatus == DalBookingStatus.Confirmed && waitingListBookings.Count > 0)
+                {
+                    var FirstWaitingListBooking = waitingListBookings[0];
+                    FirstWaitingListBooking.BookingStatus = DalBookingStatus.Confirmed;
+                    FirstWaitingListBooking.WaitingNumber = null;
+                    bookingsToUpdate.Add(FirstWaitingListBooking);
+                    waitingListBookings.RemoveAt(0);
+                }
 
-            _bookingRepository.UpdateRange(bookingsToUpdate);
-            await _bookingRepository.SaveChangesAsync();
-            return true;
+                for (var i = 0; i < waitingListBookings.Count; i++)
+                {
+                    waitingListBookings[i].WaitingNumber = i + 1;
+                    bookingsToUpdate.Add(waitingListBookings[i]);
+                }
+
+                _bookingRepository.UpdateRange(bookingsToUpdate);
+                await _bookingRepository.SaveChangesAsync();
+                return true;
+            });
         }
     }
 }
