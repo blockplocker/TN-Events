@@ -13,7 +13,7 @@ public class EventServiceTests
         var categoryRepository = new CategoryRepositoryFake();
         eventRepository.Events.Add(ServiceTestData.Event(id: 1, bookedCount: 2));
 
-        var service = new EventService(eventRepository, categoryRepository);
+        var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
 
         var result = await service.GetAllEventsAsync();
 
@@ -39,7 +39,7 @@ public class EventServiceTests
             ServiceTestData.Event(id: 3, title: "Three")
         });
 
-        var service = new EventService(eventRepository, categoryRepository);
+        var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
 
         var result = await service.GetUpcomingEventsAsync(2);
 
@@ -53,7 +53,7 @@ public class EventServiceTests
     [Fact]
     public async Task GetEventByIdAsync_ReturnsNull_WhenEventDoesNotExist()
     {
-        var service = new EventService(new EventRepositoryFake(), new CategoryRepositoryFake());
+        var service = new EventService(new EventRepositoryFake(), new CategoryRepositoryFake(), new BookingRepositoryFake());
 
         var result = await service.GetEventByIdAsync(42);
 
@@ -65,7 +65,7 @@ public class EventServiceTests
     {
         var eventRepository = new EventRepositoryFake();
         var categoryRepository = new CategoryRepositoryFake();
-        var service = new EventService(eventRepository, categoryRepository);
+        var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
         var dto = new CreateEventRequestDto
         {
             Title = "New Event",
@@ -93,7 +93,7 @@ public class EventServiceTests
         var categoryRepository = new CategoryRepositoryFake();
         var existing = ServiceTestData.Event(id: 8, title: "Old Title", categoryId: 5);
         eventRepository.Events.Add(existing);
-        var service = new EventService(eventRepository, categoryRepository);
+        var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
         var dto = new UpdateEventRequestDto
         {
             Id = 8,
@@ -120,7 +120,7 @@ public class EventServiceTests
     {
         var eventRepository = new EventRepositoryFake();
         var categoryRepository = new CategoryRepositoryFake();
-        var service = new EventService(eventRepository, categoryRepository);
+        var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
 
         await service.ToggleCancelEventAsync(11);
 

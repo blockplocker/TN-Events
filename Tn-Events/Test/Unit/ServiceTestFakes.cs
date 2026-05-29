@@ -147,6 +147,32 @@ internal sealed class BookingRepositoryFake : IBookingRepository
     }
 
     public Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action) => action();
+
+    public Task CancelBookingsByEventIdAsync(int eventId)
+    {
+        foreach (var booking in Bookings.Where(b => b.EventId == eventId &&
+            (b.BookingStatus == BookingStatus.Confirmed || b.BookingStatus == BookingStatus.Waitinglist)))
+        {
+            booking.BookingStatus = BookingStatus.Cancelled;
+            booking.WaitingNumber = null;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task<List<Booking>> GetWaitingListByEventIdAsync(int eventId)
+    {
+        return Task.FromResult(Bookings
+            .Where(b => b.EventId == eventId && b.BookingStatus == BookingStatus.Waitinglist)
+            .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
+            .ThenBy(b => b.Id)
+            .ToList());
+    }
+
+    public Task<int> GetConfirmedCountByEventIdAsync(int eventId)
+    {
+        return Task.FromResult(Bookings
+            .Count(b => b.EventId == eventId && b.BookingStatus == BookingStatus.Confirmed));
+    }
 }
 
 internal sealed class EventRepositoryFake : IEventRepository
