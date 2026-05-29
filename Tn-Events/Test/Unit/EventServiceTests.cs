@@ -116,14 +116,17 @@ public class EventServiceTests
     }
 
     [Fact]
-    public async Task ToggleCancelEventAsync_DelegatesToRepository()
+    public async Task ToggleCancelEventAsync_TogglesEvent()
     {
         var eventRepository = new EventRepositoryFake();
         var categoryRepository = new CategoryRepositoryFake();
         var service = new EventService(eventRepository, categoryRepository, new BookingRepositoryFake());
+        eventRepository.Events.Add(ServiceTestData.Event(id: 11, isCancelled: false));
+
 
         await service.ToggleCancelEventAsync(11);
 
         Assert.Equal(11, eventRepository.LastToggledId);
+        Assert.True(eventRepository.Events[0].IsCancelled);
     }
   }
