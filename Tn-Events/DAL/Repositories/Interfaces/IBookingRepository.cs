@@ -15,5 +15,8 @@ namespace DAL.Repositories.Interfaces
         void UpdateRange(IEnumerable<Booking> bookings);
         Task SaveChangesAsync();
         Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action);
+        Task CancelBookingsByEventIdAsync(int eventId);
+        Task<List<Booking>> GetWaitingListByEventIdAsync(int eventId);
+        Task<int> GetConfirmedCountByEventIdAsync(int eventId);
     }
 }
