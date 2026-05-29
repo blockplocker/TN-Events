@@ -89,6 +89,37 @@ namespace DAL.Repositories
             return _context.SaveChangesAsync();
         }
 
+        public async Task CancelBookingsByEventIdAsync(int eventId)
+        {
+            var bookings = await _context.Bookings
+                .Where(b => b.EventId == eventId &&
+                    (b.BookingStatus == BookingStatus.Confirmed || b.BookingStatus == BookingStatus.Waitinglist))
+                .ToListAsync();
+
+            foreach (var booking in bookings)
+            {
+                booking.BookingStatus = BookingStatus.Cancelled;
+                booking.WaitingNumber = null;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Booking>> GetWaitingListByEventIdAsync(int eventId)
+        {
+            return await _context.Bookings
+                .Where(b => b.EventId == eventId && b.BookingStatus == BookingStatus.Waitinglist)
+                .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
+                .ThenBy(b => b.Id)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetConfirmedCountByEventIdAsync(int eventId)
+        {
+            return await _context.Bookings
+                .CountAsync(b => b.EventId == eventId && b.BookingStatus == BookingStatus.Confirmed);
+        }
+
         public async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> action)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);

@@ -59,14 +59,14 @@
 
         <div class="col-md-6">
             <div class="form-floating mb-3">
-                <InputDate @bind-Value="Input.StartDate" id="startdate" class="form-control" />
-                <label for="startdate">Startdatum</label>
+                <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="Input.StartDate" id="startdate" class="form-control" />
+                <label for="startdate">Startdatum & tid</label>
                 <ValidationMessage For="() => Input.StartDate" class="text-danger" />
             </div>
 
             <div class="form-floating mb-3">
-                <InputDate @bind-Value="Input.EndDate" id="enddate" class="form-control" />
-                <label for="enddate">Slutdatum</label>
+                <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="Input.EndDate" id="enddate" class="form-control" />
+                <label for="enddate">Slutdatum & tid</label>
                 <ValidationMessage For="() => Input.EndDate" class="text-danger" />
             </div>
 
