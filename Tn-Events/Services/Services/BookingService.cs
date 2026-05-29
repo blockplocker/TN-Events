@@ -4,6 +4,8 @@ using Services.Dto.Request;
 using Services.Dto.Response;
 using Services.Mappers;
 using Services.Services.Interfaces;
+using DalBookingStatus = DAL.Models.BookingStatus;
+using DtoBookingStatus = Services.Dto.BookingStatus;
 
 namespace Services.Services
 {
@@ -57,7 +59,7 @@ namespace Services.Services
                 var userBookings = await _bookingRepository.GetByUserIdAsync(dto.UserId);
                 var existingActiveBooking = userBookings.FirstOrDefault(b =>
                     b.EventId == dto.EventId &&
-                    b.BookingStatus != BookingStatus.Cancelled);
+                    b.BookingStatus != DalBookingStatus.Cancelled);
 
                 if (existingActiveBooking != null)
                 {
@@ -65,13 +67,13 @@ namespace Services.Services
                 }
 
                 var existingBookings = await _bookingRepository.GetByEventIdAsync(dto.EventId);
-                var confirmedCount = existingBookings.Count(b => b.BookingStatus == BookingStatus.Confirmed);
-                var status = confirmedCount < ev.Capacity ? BookingStatus.Confirmed : BookingStatus.Waitinglist;
+                var confirmedCount = existingBookings.Count(b => b.BookingStatus == DalBookingStatus.Confirmed);
+                var status = confirmedCount < ev.Capacity ? DalBookingStatus.Confirmed : DalBookingStatus.Waitinglist;
 
                 int? waitingNumber = null;
-                if (status == BookingStatus.Waitinglist)
+                if (status == DalBookingStatus.Waitinglist)
                 {
-                    waitingNumber = existingBookings.Count(b => b.BookingStatus == BookingStatus.Waitinglist) + 1;
+                    waitingNumber = existingBookings.Count(b => b.BookingStatus == DalBookingStatus.Waitinglist) + 1;
                 }
 
                 var booking = await _bookingRepository.CreateAsync(BookingMapper.Map(dto, status, waitingNumber));
@@ -83,7 +85,7 @@ namespace Services.Services
         {
             var bookings = await _bookingRepository.GetByUserIdAsync(userId);
             return BookingMapper.ToDtoList(bookings)
-                .Where(b => b.BookingStatus != BookingStatus.Cancelled)
+                .Where(b => b.BookingStatus != DtoBookingStatus.Cancelled)
                 .GroupBy(b => b.EventId)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.Id).First());
         }
@@ -102,46 +104,49 @@ namespace Services.Services
 
         public async Task<bool> CancelBookingAsync(int id)
         {
-            var booking = await _bookingRepository.GetByIdAsync(id);
-            if (booking == null) return false;
-
-            var previousStatus = booking.BookingStatus;
-            if (previousStatus != BookingStatus.Confirmed && previousStatus != BookingStatus.Waitinglist)
+            return await _bookingRepository.ExecuteInTransactionAsync(async () =>
             {
-                return false;
-            }
+                var booking = await _bookingRepository.GetByIdAsync(id);
+                if (booking == null) return false;
 
-            var eventBookings = await _bookingRepository.GetByEventIdAsync(booking.EventId);
-            var waitingListBookings = eventBookings
-                .Where(b => b.BookingStatus == BookingStatus.Waitinglist && b.Id != booking.Id)
-                .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
-                .ThenBy(b => b.Id)
-                .ToList();
+                var previousStatus = booking.BookingStatus;
+                if (previousStatus != DalBookingStatus.Confirmed && previousStatus != DalBookingStatus.Waitinglist)
+                {
+                    return false;
+                }
 
-            var bookingsToUpdate = new List<Booking>();
+                var eventBookings = await _bookingRepository.GetByEventIdAsync(booking.EventId);
+                var waitingListBookings = eventBookings
+                    .Where(b => b.BookingStatus == DalBookingStatus.Waitinglist && b.Id != booking.Id)
+                    .OrderBy(b => b.WaitingNumber ?? int.MaxValue)
+                    .ThenBy(b => b.Id)
+                    .ToList();
 
-            booking.BookingStatus = BookingStatus.Cancelled;
-            booking.WaitingNumber = null;
-            bookingsToUpdate.Add(booking);
+                var bookingsToUpdate = new List<Booking>();
 
-            if (previousStatus == BookingStatus.Confirmed && waitingListBookings.Count > 0)
-            {
-                var FirstWaitingListBooking = waitingListBookings[0];
-                FirstWaitingListBooking.BookingStatus = BookingStatus.Confirmed;
-                FirstWaitingListBooking.WaitingNumber = null;
-                bookingsToUpdate.Add(FirstWaitingListBooking);
-                waitingListBookings.RemoveAt(0);
-            }
+                booking.BookingStatus = DalBookingStatus.Cancelled;
+                booking.WaitingNumber = null;
+                bookingsToUpdate.Add(booking);
 
-            for (var i = 0; i < waitingListBookings.Count; i++)
-            {
-                waitingListBookings[i].WaitingNumber = i + 1;
-                bookingsToUpdate.Add(waitingListBookings[i]);
-            }
+                if (previousStatus == DalBookingStatus.Confirmed && waitingListBookings.Count > 0)
+                {
+                    var FirstWaitingListBooking = waitingListBookings[0];
+                    FirstWaitingListBooking.BookingStatus = DalBookingStatus.Confirmed;
+                    FirstWaitingListBooking.WaitingNumber = null;
+                    bookingsToUpdate.Add(FirstWaitingListBooking);
+                    waitingListBookings.RemoveAt(0);
+                }
 
-            _bookingRepository.UpdateRange(bookingsToUpdate);
-            await _bookingRepository.SaveChangesAsync();
-            return true;
+                for (var i = 0; i < waitingListBookings.Count; i++)
+                {
+                    waitingListBookings[i].WaitingNumber = i + 1;
+                    bookingsToUpdate.Add(waitingListBookings[i]);
+                }
+
+                _bookingRepository.UpdateRange(bookingsToUpdate);
+                await _bookingRepository.SaveChangesAsync();
+                return true;
+            });
         }
     }
 }

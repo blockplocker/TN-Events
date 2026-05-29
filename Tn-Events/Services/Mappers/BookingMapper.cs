@@ -1,12 +1,14 @@
 using DAL.Models;
 using Services.Dto.Request;
 using Services.Dto.Response;
+using DalBookingStatus = DAL.Models.BookingStatus;
+using DtoBookingStatus = Services.Dto.BookingStatus;
 
 namespace Services.Mappers
 {
     public static class BookingMapper
     {
-        public static Booking Map(CreateBookingRequestDto dto, BookingStatus status, int? waitingNumber = null)
+        public static Booking Map(CreateBookingRequestDto dto, DalBookingStatus status, int? waitingNumber = null)
         {
             return new Booking
             {
@@ -28,7 +30,7 @@ namespace Services.Mappers
                     : $"{booking.User.FirstName} {booking.User.LastName}".Trim(),
                 EventId = booking.EventId,
                 EventTitle = booking.Event?.Title ?? string.Empty,
-                BookingStatus = booking.BookingStatus,
+                BookingStatus = (DtoBookingStatus)booking.BookingStatus,
                 WaitingNumber = booking.WaitingNumber,
                 StartDate = booking.Event?.StartDate ?? default,
                 EndDate = booking.Event?.EndDate ?? default,
